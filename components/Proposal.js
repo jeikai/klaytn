@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 
 const Proposal = ({ id, votingContract, address, web3 }) => {
+  // Lưu trữ thông tin đề xuất
   const [proposalInfo, setProposalInfo] = useState(null);
+  // Lưu lại kết quả của đề xuất
   const [resultProposal, setResult] = useState(0);
 
   useEffect(() => {
