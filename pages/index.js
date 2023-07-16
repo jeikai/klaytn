@@ -144,6 +144,7 @@ export default function Home() {
           .getIdProposal()
           .call()
           .then((result) => {
+            setId([])
             const serializedResult = JSON.stringify(result, (key, value) => {
               if (typeof value === "bigint") {
                 setId((data) => [...data, Number(value)]);
@@ -160,6 +161,7 @@ export default function Home() {
           .getAgree()
           .call()
           .then((result) => {
+            setYesCount([])
             const serializedResult = JSON.stringify(result, (key, value) => {
               if (typeof value === "bigint") {
                 setYesCount((data) => [...data, Number(value)]);

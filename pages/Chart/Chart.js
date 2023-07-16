@@ -13,6 +13,7 @@ import {
 } from "recharts";
 
 export default function ({ yes, no, id, count }) {
+  console.log(yes.length)
   const data = [];
   for (let i = 0; i < count; i++) {
     let sum = yes[i] + no[i];
