@@ -34,9 +34,9 @@ export default function Home() {
   const [countProposal, setCount] = useState(0);
   const [yesCount, setYes] = useState(0);
   const [noCount, setNo] = useState(0);
-  let IdProposal = [];
-  let yes = [];
-  let no = [];
+  const [IdProposal, setId] = useState([]);
+  const [yes, setYesCount] = useState([]);
+  const [no, setNoCount] = useState([]);
 
   const updateAddressBalance = (e) => {
     setAddressBalance(e.target.value);
@@ -127,7 +127,6 @@ export default function Home() {
           .proposalCount()
           .call();
         setCount(Number(proposalCount));
-        // console.log(yes)
       }
     }
 
@@ -147,7 +146,7 @@ export default function Home() {
           .then((result) => {
             const serializedResult = JSON.stringify(result, (key, value) => {
               if (typeof value === "bigint") {
-                IdProposal.push(Number(value));
+                setId((data) => [...data, Number(value)]);
                 return value.toString();
               }
               return value;
@@ -163,7 +162,7 @@ export default function Home() {
           .then((result) => {
             const serializedResult = JSON.stringify(result, (key, value) => {
               if (typeof value === "bigint") {
-                yes.push(value);
+                setYesCount((data) => [...data, Number(value)]);
                 return value.toString();
               }
               return value;
@@ -172,14 +171,14 @@ export default function Home() {
           .catch((error) => {
             console.log("Error:", error);
           });
-
         votingContract.methods
           .getDisagree()
           .call()
           .then((result) => {
+            setNoCount([]);
             const serializedResult = JSON.stringify(result, (key, value) => {
               if (typeof value === "bigint") {
-                no.push(Number(value));
+                setNoCount((data) => [...data, Number(value)]);
                 return value.toString();
               }
               return value;
@@ -200,13 +199,7 @@ export default function Home() {
         <div className="my-10 mx-5">
           <div className="grid grid-cols-4 gap-2">
             <div className="col-span-3">
-              {countProposal > 0 && (
-                <Chart
-                  yes={yes}
-                  no={no}
-                  id={IdProposal}
-                />
-              )}
+              <Chart yes={yes} no={no} id={IdProposal} count={countProposal}/>
             </div>
             <Infor address={address} />
           </div>
