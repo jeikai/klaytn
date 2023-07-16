@@ -66,23 +66,23 @@ function List({ id, votingContract, address, web3, sum, setYes, setNo }) {
               <>
                 <button
                   onClick={() => handleVote(true)}
-                  classNameName="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-3 mr-5"
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-3 mr-5"
                 >
                   Đồng ý
                 </button>
                 <button
                   onClick={() => handleVote(false)}
-                  classNameName="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-3"
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mt-3"
                 >
                   Không đồng ý
                 </button>
               </>
             ) : resultProposal == 0 ? (
-              <button onClick={handleFinalize} classNameName=" button is-primary">
+              <button onClick={handleFinalize} className=" button is-primary">
                 Kết thúc
               </button>
             ) : (
-              <p classNameName=" mt-3">
+              <p className=" mt-3">
                 {Number(web3.utils.fromWei(proposalInfo.yesCount, "ether")) >
                 Number(web3.utils.fromWei(proposalInfo.noCount, "ether"))
                   ? "Đề xuất được thông qua"

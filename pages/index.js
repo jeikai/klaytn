@@ -12,6 +12,7 @@ import Infor from "./Infor/Infor";
 import Chart from "./Chart/Chart";
 import Input from "./Input/Input";
 import List from "./List/List";
+
 export default function Home() {
   const toastOptions = {
     position: "bottom-right",
@@ -30,9 +31,13 @@ export default function Home() {
   const [amountDeposit, setAmountDeposit] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
   const [description, setDescription] = useState(null);
-  const [countProposal, setCount] = useState(null);
+  const [countProposal, setCount] = useState(0);
   const [yesCount, setYes] = useState(0);
   const [noCount, setNo] = useState(0);
+  let IdProposal = [];
+  let yes = [];
+  let no = [];
+
   const updateAddressBalance = (e) => {
     setAddressBalance(e.target.value);
   };
@@ -67,19 +72,17 @@ export default function Home() {
         console.log(error);
       }
     } else {
-      alert("Not install Metamask! Please install wallet");
+      alert("Metamask is not installed! Please install a wallet.");
     }
   };
 
   const handleGetBalance = async () => {
-    console.log(tokenContract);
-
     const balance = await tokenContract.methods
       .balanceOf(addressBalance)
       .call();
     setBalance(web3.utils.fromWei(balance, "ether"));
     toast.success(
-      "Ví có địa chỉ: " + addressBalance + " đang sở hữu " + balance + " ether."
+      "Wallet with address: " + addressBalance + " owns " + balance + " ether."
     );
   };
 
@@ -100,16 +103,14 @@ export default function Home() {
       const allowance = await tokenContract.methods
         .allowance(address, votingContract._address)
         .call();
-      console.log(Number(web3.utils.fromWei(allowance, "ether")) < 20);
       if (Number(web3.utils.fromWei(allowance, "ether")) < 20) {
-        console.log(1);
         await tokenContract.methods
           .approve(votingContract._address, BigInt(20 * 10 ** 18))
           .send({
             from: address,
           });
       }
-      console.log(2);
+
       await votingContract.methods.createProposal(description).send({
         from: address,
       });
@@ -118,6 +119,7 @@ export default function Home() {
       setErrorMessage(error.message);
     }
   };
+
   useEffect(() => {
     async function fetchData() {
       if (votingContract) {
@@ -125,29 +127,88 @@ export default function Home() {
           .proposalCount()
           .call();
         setCount(Number(proposalCount));
+        // console.log(yes)
       }
     }
+
     const interval = setInterval(() => {
       fetchData();
     }, 10000);
 
     return () => clearInterval(interval);
-  });
+  }, [countProposal, votingContract]);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (countProposal > 0) {
+        votingContract.methods
+          .getIdProposal()
+          .call()
+          .then((result) => {
+            const serializedResult = JSON.stringify(result, (key, value) => {
+              if (typeof value === "bigint") {
+                IdProposal.push(Number(value));
+                return value.toString();
+              }
+              return value;
+            });
+          })
+          .catch((error) => {
+            console.log("Error:", error);
+          });
+
+        votingContract.methods
+          .getAgree()
+          .call()
+          .then((result) => {
+            const serializedResult = JSON.stringify(result, (key, value) => {
+              if (typeof value === "bigint") {
+                yes.push(value);
+                return value.toString();
+              }
+              return value;
+            });
+          })
+          .catch((error) => {
+            console.log("Error:", error);
+          });
+
+        votingContract.methods
+          .getDisagree()
+          .call()
+          .then((result) => {
+            const serializedResult = JSON.stringify(result, (key, value) => {
+              if (typeof value === "bigint") {
+                no.push(Number(value));
+                return value.toString();
+              }
+              return value;
+            });
+          })
+          .catch((error) => {
+            console.log("Error:", error);
+          });
+      }
+    }
+    fetchData();
+  }, [countProposal, votingContract]);
 
   return (
     <div>
-
       <main>
-        <Header
-          handleConnectWallet={handleConnectWallet}
-          address={address}
-        ></Header>
+        <Header handleConnectWallet={handleConnectWallet} address={address} />
         <div className="my-10 mx-5">
           <div className="grid grid-cols-4 gap-2">
             <div className="col-span-3">
-              <Chart yes={yesCount} no={noCount}></Chart>
+              {countProposal > 0 && (
+                <Chart
+                  yes={yes}
+                  no={no}
+                  id={IdProposal}
+                />
+              )}
             </div>
-            <Infor address={address}></Infor>
+            <Infor address={address} />
           </div>
         </div>
         <div className="my-10 mx-5">
@@ -190,7 +251,7 @@ export default function Home() {
                             setYes={setYes}
                             setNo={setNo}
                             sum={countProposal}
-                          ></List>
+                          />
                         );
                       })}
                   </tbody>
@@ -203,19 +264,19 @@ export default function Home() {
                 update_data={updateAddressBalance}
                 submit={handleGetBalance}
                 text_button="Check"
-              ></Input>
+              />
               <Input
                 label="Nạp vào contract"
                 update_data={updateAmountDeposit}
                 submit={handleDeposit}
                 text_button="Chuyển"
-              ></Input>
+              />
               <Input
                 label="Tạo ra đề xuất mới"
                 update_data={updateDescription}
                 submit={handleSumbitProposal}
                 text_button="Tạo"
-              ></Input>
+              />
             </div>
           </div>
         </div>
